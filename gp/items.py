@@ -28,8 +28,10 @@ class GPReviewItem(scrapy.Item):
     review_text = scrapy.Field()
     review_text_full = scrapy.Field()
     review_rating = scrapy.Field()
+    helpfulness = scrapy.Field()
     reply = scrapy.Field()
     reply_date = scrapy.Field()
+    retrv_date = scrapy.Field()
 
     # def __str__(self):
     #     return ""

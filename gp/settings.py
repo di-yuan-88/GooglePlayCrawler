@@ -22,10 +22,11 @@ NEWSPIDER_MODULE = 'gp.spiders'
 # FEED_FORMAT = "jsonlines"
 # FEED_URI = "file:///D:/Github/gp.json"
 
-# logging settings
-# import logging
-# from logging.handlers import RotatingFileHandler
-# from scrapy.utils.log import configure_logging
+# chrome PATH setting
+
+CHROME_PATH = ''  # 可以指定绝对路径，如果不指定的话会在$PATH里面查找
+# CHROME_DRIVER_PATH = r'' # Mac
+CHROME_DRIVER_PATH = 'D:\\Github\\bin\\chromedriver.exe'  # PC - in office
 
 
 LOG_ENABLED = False
@@ -37,7 +38,7 @@ LOG_FORMAT = '%(asctime)s [%(name)s] %(levelname)s: %(message)s'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
-# DEPTH_LIMIT = 0
+# DEPTH_LIMIT = 1
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 

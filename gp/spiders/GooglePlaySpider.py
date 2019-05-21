@@ -17,15 +17,17 @@ class GooglePlayCrawl(CrawlSpider):
     name = 'gp_crawl'
     allowed_domains = ['play.google.com']
     start_urls = [
-        'http://play.google.com/',
-        'https://play.google.com/store/apps/details?id=com.doctorondemand.android.patient'
+        'https://play.google.com/store/apps/category/MEDICAL',
+        'https://play.google.com/store/apps/category/HEALTH_AND_FITNESS',
+        'https://play.google.com/store/apps/details?id=com.theinnerhour.b2b',
+        'https://play.google.com/store/apps/details?id=com.goodrx'
     ]
 
     rules =( 
         Rule(LinkExtractor(allow=("https://play\.google\.com/store/apps/details", )), 
-            # process_links=lambda l: l[:10],
+            # process_links=lambda l: l[:2],
             callback = 'parse_app'  
-            ,follow = True
+            , follow = True
             ),
         # Rule(LinkExtractor(allow=('https://play\.google\.com/store/apps/collection', )), follow = True)
     )
@@ -46,7 +48,7 @@ class GooglePlayCrawl(CrawlSpider):
         except Exception as error:
             exception_count += 1
             # print('gp_name except = ', error)
-            logger.warning('gp_name except = %s', error)
+            logger.warning('gp_name exception = %s', error)
             item['gp_name'] = ''
 
         try:
@@ -54,7 +56,7 @@ class GooglePlayCrawl(CrawlSpider):
         except Exception as error:
             exception_count += 1
             # print('gp_url except = ', error)
-            logger.warning('gp_url except = %s', error)
+            logger.warning('gp_url exception = %s', error)
             item['gp_url'] = ''
 
         try:
@@ -62,14 +64,14 @@ class GooglePlayCrawl(CrawlSpider):
         except Exception as error:
             exception_count += 1
             # print('gp_id except = ', error)
-            logger.warning('gp_id except = %s', error)
+            logger.warning('gp_id exception = %s', error)
             item['gp_id'] = ''       
         try:
             item['gp_intro'] = response.xpath('//meta[@itemprop="description"]/@content').extract_first()
         except Exception as error:
             exception_count += 1
             # print('gp_intro except = ', error)
-            logger.warning('gp_intro except = %s', error)
+            logger.warning('gp_intro exception = %s', error)
             item['gp_intro'] = '' 
 
         try:
@@ -77,7 +79,7 @@ class GooglePlayCrawl(CrawlSpider):
         except Exception as error:
             exception_count += 1
             # print('gp_category except = ', error)
-            logger.warning('gp_category except = %s', error)
+            logger.warning('gp_category exception = %s', error)
             item['gp_category'] = '' 
 
         try:
@@ -85,7 +87,7 @@ class GooglePlayCrawl(CrawlSpider):
         except Exception as error:
             exception_count += 1
             # print('gp_price except = ', error)
-            logger.warning('gp_price except = %s', error)
+            logger.warning('gp_price exception = %s', error)
             item['gp_price'] = '' 
 
         try:
@@ -93,7 +95,7 @@ class GooglePlayCrawl(CrawlSpider):
         except Exception as error:
             exception_count += 1
             # print('gp_rating except = ', error)
-            logger.warning('gp_rating except = %s', error)
+            logger.warning('gp_rating exception = %s', error)
             item['gp_rating'] = '' 
 
         try:
@@ -105,7 +107,7 @@ class GooglePlayCrawl(CrawlSpider):
         except Exception as error:
             exception_count += 1
             # print('gp_review_ct except = ', error)
-            logger.warning('gp_review_ct except = %s', error)
+            logger.warning('gp_review_ct exception = %s', error)
             item['gp_review_ct'] = ''
         
         item['retrieve_date'] = datetime.datetime.now()
@@ -129,7 +131,7 @@ class GooglePlayCrawl(CrawlSpider):
                 except Exception as error:
                     exception_count += 1
                     # print('review_user exception = ', error)
-                    logger.warning('review_user except = %s', error)
+                    logger.warning('review_user exception = %s', error)
                     review['review_user'] = '' 
 
                 try:
@@ -140,7 +142,7 @@ class GooglePlayCrawl(CrawlSpider):
                 except Exception as error:
                     exception_count += 1
                     # print('review_rating exception = ', error)
-                    logger.warning('review_rating except = %s', error)
+                    logger.warning('review_rating exception = %s', error)
                     review['review_rating'] = '' 
                 
                 try:
@@ -149,7 +151,7 @@ class GooglePlayCrawl(CrawlSpider):
                 except Exception as error:
                     exception_count += 1
                     # print('review_date exception = ', error)
-                    logger.warning('review_date except = %s', error)
+                    logger.warning('review_date exception = %s', error)
                     review['review_date'] = '' 
                 
                 try:
@@ -158,7 +160,7 @@ class GooglePlayCrawl(CrawlSpider):
                 except Exception as error:
                     exception_count += 1
                     # print('review_text exception = ', error)
-                    logger.warning('review_text except = %s', error)
+                    logger.warning('review_text exception = %s', error)
                     review['review_text'] = ''
 
                 # full review
@@ -169,8 +171,23 @@ class GooglePlayCrawl(CrawlSpider):
                 except Exception as error:
                     exception_count += 1
                     # print('review_text_full exception = ', error)
-                    logger.warning('review_text_full except = %s', error)
+                    logger.warning('review_text_full exception = %s', error)
                     review['review_text_full'] = ''
+
+                # how many user find it helpfull
+                # //*[@id="fcxH9b"]/div[4]/c-wiz[2]/div/div[2]/div/div[1]/div/div/div[1]/div[2]/div/div[5]
+                # //*[@id="fcxH9b"]/div[4]/c-wiz[2]/div/div[2]/div/div[1]/div/div/div[1]/div[2]/div/div[5]/div/div[2]/div[1]/div[2]/div/span/div/content/span/div
+                # aria-label="Number of times this review was rated helpful"
+
+
+                # //*[@id="fcxH9b"]/div[4]/c-wiz[2]/div/div[2]/div/div[1]/div/div/div[1]/div[2]/div/div[1]/div/div[2]/div[1]/div[2]/div/span/div/content/span/div
+                try:
+                    review['helpfulness'] = featured.xpath('div/div[2]/div[1]/div[2]/div/span/div/content/span/div/text()').extract_first()
+                except Exception as error:
+                    exception_count += 1
+                    # print('review_text_full exception = ', error)
+                    logger.warning('review_helpfulness exception = %s', error)
+                    review['helpfulness'] = ''
 
                 # dev's response to reviews
 
@@ -179,7 +196,7 @@ class GooglePlayCrawl(CrawlSpider):
                 except Exception as error:
                     exception_count += 1
                     # print('reply exception = ', error）
-                    logger.warning('reply except = %s', error)
+                    logger.warning('reply exception = %s', error)
                     review['reply'] = ''
 
                 try:
@@ -187,9 +204,11 @@ class GooglePlayCrawl(CrawlSpider):
                 except Exception as error:
                     exception_count += 1
                     # print('reply_date exception = ', error)
-                    logger.warning('reply_date except = %s', error)
+                    logger.warning('reply_date exception = %s', error)
                     review['reply_date'] = ''
                 
+                review['retrv_date'] = datetime.datetime.now()
+
                 yield review
         else:
             return
@@ -203,9 +222,8 @@ class GooglePlaySpider(scrapy.Spider):
     name = 'gp'
     allowed_domains = ['play.google.com']
     start_urls = ['https://play.google.com/store/apps/details?id=com.urbandroid.lux'
-    ,'https://play.google.com/store/apps/details?id=com.ibuild.ifasting'
-    ,'https://play.google.com/store/apps/details?id=com.zodinplex.thunder.sounds.relax.and.sleep'
     ,'https://play.google.com/store/apps/details?id=com.hssn.anatomy'
+    ,'https://play.google.com/store/apps/details?id=ai.kanghealth'
     ]
 
     # def __init__(self, *args, **kwargs):
@@ -231,7 +249,7 @@ class GooglePlaySpider(scrapy.Spider):
         except Exception as error:
             exception_count += 1
             # print('gp_name except = ', error)
-            logger.warning('gp_name except = %s', error)
+            logger.warning('gp_name exception = %s', error)
             item['gp_name'] = ''
 
         try:
@@ -239,7 +257,7 @@ class GooglePlaySpider(scrapy.Spider):
         except Exception as error:
             exception_count += 1
             # print('gp_url except = ', error)
-            logger.warning('gp_url except = %s', error)
+            logger.warning('gp_url exception = %s', error)
             item['gp_url'] = ''
 
         try:
@@ -247,14 +265,14 @@ class GooglePlaySpider(scrapy.Spider):
         except Exception as error:
             exception_count += 1
             # print('gp_id except = ', error)
-            logger.warning('gp_id except = %s', error)
+            logger.warning('gp_id exception = %s', error)
             item['gp_id'] = ''       
         try:
             item['gp_intro'] = response.xpath('//meta[@itemprop="description"]/@content').extract_first()
         except Exception as error:
             exception_count += 1
             # print('gp_intro except = ', error)
-            logger.warning('gp_intro except = %s', error)
+            logger.warning('gp_intro exception = %s', error)
             item['gp_intro'] = '' 
 
         try:
@@ -262,7 +280,7 @@ class GooglePlaySpider(scrapy.Spider):
         except Exception as error:
             exception_count += 1
             # print('gp_category except = ', error)
-            logger.warning('gp_category except = %s', error)
+            logger.warning('gp_category exception = %s', error)
             item['gp_category'] = '' 
 
         try:
@@ -270,7 +288,7 @@ class GooglePlaySpider(scrapy.Spider):
         except Exception as error:
             exception_count += 1
             # print('gp_price except = ', error)
-            logger.warning('gp_price except = %s', error)
+            logger.warning('gp_price exception = %s', error)
             item['gp_price'] = '' 
 
         try:
@@ -278,7 +296,7 @@ class GooglePlaySpider(scrapy.Spider):
         except Exception as error:
             exception_count += 1
             # print('gp_rating except = ', error)
-            logger.warning('gp_rating except = %s', error)
+            logger.warning('gp_rating exception = %s', error)
             item['gp_rating'] = '' 
 
         try:
@@ -290,7 +308,7 @@ class GooglePlaySpider(scrapy.Spider):
         except Exception as error:
             exception_count += 1
             # print('gp_review_ct except = ', error)
-            logger.warning('gp_review_ct except = %s', error)
+            logger.warning('gp_review_ct exception = %s', error)
             item['gp_review_ct'] = ''
         
         item['retrieve_date'] = datetime.datetime.now()
@@ -314,7 +332,7 @@ class GooglePlaySpider(scrapy.Spider):
                 except Exception as error:
                     exception_count += 1
                     # print('review_user exception = ', error)
-                    logger.warning('review_user except = %s', error)
+                    logger.warning('review_user exception = %s', error)
                     review['review_user'] = '' 
 
                 try:
@@ -325,7 +343,7 @@ class GooglePlaySpider(scrapy.Spider):
                 except Exception as error:
                     exception_count += 1
                     # print('review_rating exception = ', error)
-                    logger.warning('review_rating except = %s', error)
+                    logger.warning('review_rating exception = %s', error)
                     review['review_rating'] = '' 
                 
                 try:
@@ -334,7 +352,7 @@ class GooglePlaySpider(scrapy.Spider):
                 except Exception as error:
                     exception_count += 1
                     # print('review_date exception = ', error)
-                    logger.warning('review_date except = %s', error)
+                    logger.warning('review_date exception = %s', error)
                     review['review_date'] = '' 
                 
                 try:
@@ -343,7 +361,7 @@ class GooglePlaySpider(scrapy.Spider):
                 except Exception as error:
                     exception_count += 1
                     # print('review_text exception = ', error)
-                    logger.warning('review_text except = %s', error)
+                    logger.warning('review_text exception = %s', error)
                     review['review_text'] = ''
 
                 # full review
@@ -354,17 +372,23 @@ class GooglePlaySpider(scrapy.Spider):
                 except Exception as error:
                     exception_count += 1
                     # print('review_text_full exception = ', error)
-                    logger.warning('review_text_full except = %s', error)
+                    logger.warning('review_text_full exception = %s', error)
                     review['review_text_full'] = ''
 
-                # dev's response to reviews
+                try:
+                    review['helpfulness'] = featured.xpath('div/div[2]/div[1]/div[2]/div/span/div/content/span/div/text()').extract_first()
+                except Exception as error:
+                    exception_count += 1
+                    # print('review_text_full exception = ', error)
+                    logger.warning('review_helpfulness exception = %s', error)
+                    review['helpfulness'] = ''
 
                 try:
                     review['reply'] = featured.xpath('div/div[2]/div[3]/text()').extract_first()
                 except Exception as error:
                     exception_count += 1
                     # print('reply exception = ', error）
-                    logger.warning('reply except = %s', error)
+                    logger.warning('reply exception = %s', error)
                     review['reply'] = ''
 
                 try:
@@ -372,14 +396,15 @@ class GooglePlaySpider(scrapy.Spider):
                 except Exception as error:
                     exception_count += 1
                     # print('reply_date exception = ', error)
-                    logger.warning('reply_date except = %s', error)
+                    logger.warning('reply_date exception = %s', error)
                     review['reply_date'] = ''
                 
+                review['retrv_date'] = datetime.datetime.now()
                 yield review
         else:
             return
 
         if exception_count >= 3:
-            print('spider_failure_parse_too_much_exception')
+            logger.warning('Total_failure_parse exceptions with %s is %d', response.url, exception_count)
             return
 

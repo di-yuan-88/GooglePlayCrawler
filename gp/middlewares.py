@@ -9,7 +9,7 @@ from scrapy.http import HtmlResponse, Request
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException, WebDriverException
 from scrapy.exceptions import IgnoreRequest
-from gp.configs import *
+from gp.settings import CHROME_PATH, CHROME_DRIVER_PATH
 # from gp.logging import scrapyLog
 import datetime
 import logging
@@ -64,7 +64,7 @@ class ChromeDownloaderMiddleware(object):
     def process_request(self, request, spider):
         try:
             # print('Chrome driver begin with', request.url)
-            logger.info('Chrome driver begin: %s', request.url)
+            logger.info('Chrome driver begin for: %s', request.url)
 
             self.driver.get(request.url)
 
@@ -73,43 +73,48 @@ class ChromeDownloaderMiddleware(object):
             allowed_cat = ['Health & Fitness', 'Medical']
 
             if len(appCategory) > 0 and appCategory[0].text in allowed_cat:
-                # //*[@id="fcxH9b"]/div[4]/c-wiz/div/div[2]/div/div[1]/div/c-wiz/c-wiz/div/div[2]/div/div[1]/div/div[2]/c-wiz/span/span[1]
-                # //*[@id="fcxH9b"]/div[4]/c-wiz[2]/div/div[2]/div/div[1]/div/div/div[1]/div[6]/div/div[2]
-                # reviews = self.driver.find_element_by_xpath('//span[@class="AYi5wd TBRnV"]')
+
+                try:
+                    body = self.driver.page_source
+                
+                except:
+                    logger.info('Something wrong with: %s', request.url)
+                    raise IgnoreRequest("Page parse error")
+
                 read_review = self.driver.find_elements_by_xpath('//span[contains(text(), "Read All Reviews")]')
+
                 if len(read_review) == 0:
-                    return HtmlResponse(url=request.url, body=self.driver.page_source, request=request, encoding='utf-8',
+                    return HtmlResponse(url=request.url, body=body, request=request, encoding='utf-8',
                                     status=200)
                 else:
                     read_review_button = read_review[0].find_element_by_xpath('./../..')
                     read_review_button.click()
-                    time.sleep(2)
-
-                    review_ct = len(self.driver.find_elements_by_xpath('//div[@jsname="fk8dgd"]//div[@class="zc7KVe"]'))
+                    time.sleep(1)
 
                     try:
-                        body = self.driver.page_source
-                    
+                        tmp = self.driver.page_source                 
                     except:
-                        logger.info('Something wrong with: %s', request.url)
-                        raise IgnoreRequest("Not a mecical app details page")
+                        logger.info('Something wrong with: %s, return the basic app info.', self.driver.current_url)
+                        return HtmlResponse(url=request.url, body=body, request=request, encoding='utf-8',
+                                    status=200)
+                    
+                    body = tmp
+                    review_ct = len(self.driver.find_elements_by_xpath('//div[@jsname="fk8dgd"]//div[@class="zc7KVe"]'))
 
-                    n = 1
-                    while n <= 10:
-
-                        logger.info('n is %d', n)
+                    n = 0
+                    while n <= 20:
                         n += 1
-
+                        # logger.info('n is %d', n)
                         if len(self.driver.find_elements_by_xpath('//span[contains(text(), "Show More")]')) == 0:
                             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                             time.sleep(2)
 
                             if review_ct == len(self.driver.find_elements_by_xpath('//div[@jsname="fk8dgd"]//div[@class="zc7KVe"]')):
-                                logger.info('No more to load')
+                                logger.info('No more reviews to load')
                                 break
                             else:    
                                 review_ct = len(self.driver.find_elements_by_xpath('//div[@jsname="fk8dgd"]//div[@class="zc7KVe"]'))
-                                logger.info('scroll down, total: %d', review_ct)
+                                # logger.info('scroll down, total: %d', review_ct)
                                 continue
                                     
                             # except WebDriverException:
@@ -130,22 +135,22 @@ class ChromeDownloaderMiddleware(object):
                             # try:
                             #     tmp = self.driver.page_source
                             review_ct = len(self.driver.find_elements_by_xpath('//div[@jsname="fk8dgd"]//div[@class="zc7KVe"]'))
-                            logger.info('more records loaded: total %d', review_ct)
+                            # logger.info('more records loaded: total %d', review_ct)
                             # except WebDriverException:
                             #     logger.error("Page loading error with %d reviews", review_ct)
                             #     break
                         try:
                             body = self.driver.page_source
                         except:
-                            logger.error("Page_source error occurred at the %d loop", n)
+                            logger.error("Page_source error occurred in loop %d for %s" % (n, self.driver.current_url))
                             break
                         
-                        logger.info('%d reviews loaded for %s' % (review_ct, self.driver.current_url))
-                        return HtmlResponse(url=self.driver.current_url, body=body, request=request, encoding='utf-8', status=200)                    
+                    logger.info('%d reviews loaded for %s' % (review_ct, self.driver.current_url))
+                    return HtmlResponse(url=self.driver.current_url, body=body, request=request, encoding='utf-8', status=200)                    
             else:
                 # print ('not_medical')
-                logger.info('Not a medical app page: %s', request.url)
-                raise IgnoreRequest("Not a mecical app details page")
+                logger.info('Not a health or mecical app: %s', request.url)
+                raise IgnoreRequest("Not a health or mecical app")
         except TimeoutException:
             return HtmlResponse(url=request.url, request=request, encoding='utf-8', status=500)
             # return HtmlResponse(url=self.driver.current_url, body=self.driver.page_source, request=request, encoding='utf-8', status=200)

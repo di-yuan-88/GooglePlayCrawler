@@ -12,6 +12,8 @@ pip install -r requirements.txt
 3. 
 Because the reviews are loaded with JS, Selenium and Headless Chrome are required (with the former installed in step 2): https://sites.google.com/a/chromium.org/chromedriver/downloads
 
+Also need to specify the directory in `settings.py` for variable `CHROME_DRIVER_PATH`.
+
 4. Install MongoDB
 
 If don't want to use MongoDB, go to `settings.py` and find the pipelines setting. Uncomment the JSONpipeline and disable settings relating to MongoDB
