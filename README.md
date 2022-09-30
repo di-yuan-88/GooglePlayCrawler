@@ -50,7 +50,7 @@ scrapy crawl gp_crawl
 ```
 
 
-#### 参考
+#### References
 1. [Scrapy+Selenium+Headless Chrome的Google Play爬虫](https://www.jianshu.com/p/d64b13a2322b)
 2. https://www.jianshu.com/p/411b20a5ce55
 
